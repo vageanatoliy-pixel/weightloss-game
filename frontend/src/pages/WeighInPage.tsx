@@ -20,14 +20,17 @@ export const WeighInPage = () => {
       if (!games[0]) return;
       setGameId(games[0].id);
       const rs = await api<Round[]>(`/games/${games[0].id}/rounds`);
-      setRounds(rs.filter((r) => r.status !== 'CLOSED'));
-      if (rs[0]) setRoundId(rs[0].id);
+      const openRounds = rs.filter((r) => r.status !== 'CLOSED');
+      setRounds(openRounds);
+      if (openRounds[0]) setRoundId(openRounds[0].id);
     };
     load().catch(console.error);
   }, []);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    setMessage('');
+
     try {
       const data = await api<{ warning?: string }>(`/games/${gameId}/weighins`, {
         method: 'POST',
@@ -37,7 +40,7 @@ export const WeighInPage = () => {
           conditions: { morning, afterToilet, noClothes },
         }),
       });
-      setMessage(data.warning ?? 'Saved');
+      setMessage(data.warning ?? 'Збережено');
     } catch (err) {
       setMessage(String(err));
     }
@@ -48,18 +51,29 @@ export const WeighInPage = () => {
   return (
     <div className="card">
       <h2>Weigh-in (приватно)</h2>
+      <p className="muted">Вага видима лише вам. Для чесності позначте умови зважування.</p>
+
       <form onSubmit={submit}>
-        <select value={roundId} onChange={(e) => setRoundId(e.target.value)}>
+        <label className="field-label" htmlFor="round">Раунд</label>
+        <select id="round" value={roundId} onChange={(e) => setRoundId(e.target.value)}>
           {rounds.map((r) => <option key={r.id} value={r.id}>{r.title}</option>)}
         </select>
-        <input type="number" step="0.1" placeholder="weight kg" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} />
-        <label><input type="checkbox" checked={morning} onChange={(e) => setMorning(e.target.checked)} /> Morning</label>
-        <label><input type="checkbox" checked={afterToilet} onChange={(e) => setAfterToilet(e.target.checked)} /> After toilet</label>
-        <label><input type="checkbox" checked={noClothes} onChange={(e) => setNoClothes(e.target.checked)} /> No clothes</label>
-        {incomplete && <p className="warn">Попередження: неповні умови зважування</p>}
-        <button type="submit">Save</button>
+
+        <label className="field-label" htmlFor="weight">Вага (kg)</label>
+        <input id="weight" type="number" step="0.1" placeholder="Напр. 82.4" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} />
+
+        <div className="checks-card">
+          <label className="check-item"><input type="checkbox" checked={morning} onChange={(e) => setMorning(e.target.checked)} /> Ранок</label>
+          <label className="check-item"><input type="checkbox" checked={afterToilet} onChange={(e) => setAfterToilet(e.target.checked)} /> Після туалету</label>
+          <label className="check-item"><input type="checkbox" checked={noClothes} onChange={(e) => setNoClothes(e.target.checked)} /> Без одягу</label>
+        </div>
+
+        {incomplete && <p className="warn">Попередження: неповні умови зважування, запис буде позначено як suspicious.</p>}
+
+        <button type="submit">Зберегти weigh-in</button>
       </form>
-      <p>{message}</p>
+
+      {message && <p className="muted">{message}</p>}
     </div>
   );
 };

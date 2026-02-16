@@ -14,23 +14,34 @@ export const SettingsPage = () => {
       method: 'PATCH',
       body: JSON.stringify({ nickname, privacyCaloriesMode: privacy }),
     });
-    setMessage('Saved');
+    setMessage('Налаштування збережено');
   };
 
   return (
     <div className="card">
       <h2>Settings</h2>
+      <p className="muted">Керуйте профілем, приватністю калорій і параметрами гри.</p>
+
       <form onSubmit={save}>
-        <input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="Nickname" />
-        <select value={privacy} onChange={(e) => setPrivacy(e.target.value as 'PRIVATE' | 'PUBLIC_CHECKMARK')}>
-          <option value="PRIVATE">Calories private</option>
+        <label className="field-label" htmlFor="nickname">Nickname</label>
+        <input id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="Nickname" />
+
+        <label className="field-label" htmlFor="privacy">Calories visibility</label>
+        <select id="privacy" value={privacy} onChange={(e) => setPrivacy(e.target.value as 'PRIVATE' | 'PUBLIC_CHECKMARK')}>
+          <option value="PRIVATE">Private (тільки для мене)</option>
           <option value="PUBLIC_CHECKMARK">Public only ✅/❌</option>
         </select>
+
         <button type="submit">Save</button>
       </form>
-      <p>{message}</p>
+
+      {message && <p className="muted">{message}</p>}
+
       {user?.role === 'ADMIN' && (
-        <p className="muted">Admin controls (`percentCap`, `pointsScheme`) доступні через API: `POST /games`, `POST /games/:id/rounds`, `PATCH /rounds/:id/close`.</p>
+        <div className="admin-tip">
+          <strong>Admin</strong>
+          <p className="muted">Керування `percentCap` і `pointsScheme` доступне через API `PATCH /games/:id/settings`.</p>
+        </div>
       )}
     </div>
   );

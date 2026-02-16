@@ -32,24 +32,34 @@ export const RoundsPage = () => {
   return (
     <div className="card">
       <h2>Round details</h2>
-      <select value={selected} onChange={(e) => setSelected(e.target.value)}>
+      <p className="muted">Результати раунду, хто здав та хто пропустив дедлайн.</p>
+
+      <label className="field-label" htmlFor="round-picker">Раунд</label>
+      <select id="round-picker" value={selected} onChange={(e) => setSelected(e.target.value)}>
         {rounds.map((r) => (
           <option key={r.id} value={r.id}>{r.title} ({r.status})</option>
         ))}
       </select>
 
-      <ul>
+      <div className="stack-list">
         {result?.results.map((r) => (
-          <li key={`${r.nickname}-${r.rank}`}>
-            {r.rank}. {r.nickname} | {r.points} pts | {r.percentCapped.toFixed(2)}% {r.percentReal !== null ? `(real ${r.percentReal.toFixed(2)}%)` : ''} {r.suspicious ? '⚠' : ''}
-          </li>
+          <article className="result-row" key={`${r.nickname}-${r.rank}`}>
+            <div>
+              <strong>{r.rank}. {r.nickname}</strong>
+              <p className="muted">{r.points} pts · capped {r.percentCapped.toFixed(2)}%</p>
+            </div>
+            <div className="result-meta">
+              {r.percentReal !== null && <span>real {r.percentReal.toFixed(2)}%</span>}
+              {r.suspicious && <span className="warn">⚠ suspicious</span>}
+            </div>
+          </article>
         ))}
-      </ul>
+      </div>
 
       <h3>Не здали</h3>
-      <ul>
-        {result?.notSubmitted.map((u) => <li key={u.nickname}>{u.nickname}</li>)}
-      </ul>
+      <div className="chips-wrap">
+        {result?.notSubmitted.map((u) => <span className="chip" key={u.nickname}>{u.nickname}</span>)}
+      </div>
     </div>
   );
 };

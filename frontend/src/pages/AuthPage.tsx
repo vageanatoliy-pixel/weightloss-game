@@ -14,6 +14,8 @@ export const AuthPage = () => {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    setError('');
+
     try {
       const data = await api<{ token: string; user: { id: string; nickname: string; email: string; role: 'USER' | 'ADMIN' } }>(
         isLogin ? '/auth/login' : '/auth/register',
@@ -30,18 +32,52 @@ export const AuthPage = () => {
   };
 
   return (
-    <div className="auth-card">
-      <h1 data-testid="auth-title">{isLogin ? 'Login' : 'Register'}</h1>
-      <form onSubmit={submit}>
-        <input data-testid="email-input" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input data-testid="password-input" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        {!isLogin && <input placeholder="Nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} />}
-        <button data-testid="auth-submit" type="submit">{isLogin ? 'Login' : 'Create account'}</button>
-      </form>
-      <button type="button" onClick={() => setLogin((v) => !v)}>
-        {isLogin ? 'No account? Register' : 'Have account? Login'}
-      </button>
-      {error && <p className="error">{error}</p>}
+    <div className="auth-shell">
+      <section className="auth-hero">
+        <p className="eyebrow">MVP v1.2</p>
+        <h1>WeightLoss Game</h1>
+        <p>Змагання без шеймінгу: публічний прогрес у %, IF і бали. Вага та калорії під контролем приватності.</p>
+      </section>
+
+      <section className="auth-card">
+        <h2 data-testid="auth-title">{isLogin ? 'Login' : 'Register'}</h2>
+
+        <form onSubmit={submit}>
+          <label className="field-label" htmlFor="email">Email</label>
+          <input
+            data-testid="email-input"
+            id="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <label className="field-label" htmlFor="password">Password</label>
+          <input
+            data-testid="password-input"
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          {!isLogin && (
+            <>
+              <label className="field-label" htmlFor="nickname">Nickname</label>
+              <input id="nickname" placeholder="Your nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+            </>
+          )}
+
+          <button data-testid="auth-submit" type="submit">{isLogin ? 'Login' : 'Create account'}</button>
+        </form>
+
+        <button className="btn-ghost" type="button" onClick={() => setLogin((v) => !v)}>
+          {isLogin ? 'No account yet? Create one' : 'Already have an account? Login'}
+        </button>
+
+        {error && <p className="error">{error}</p>}
+      </section>
     </div>
   );
 };
