@@ -17,7 +17,7 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
-      if (isLocalhost || origin === config.frontendUrl) {
+      if (isLocalhost || config.allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));

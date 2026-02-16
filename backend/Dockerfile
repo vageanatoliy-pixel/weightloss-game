@@ -16,7 +16,8 @@ ENV NODE_ENV=production
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/dist ./backend/dist
 COPY --from=builder /app/backend/package.json ./backend/package.json
+COPY --from=builder /app/backend/entrypoint.sh ./backend/entrypoint.sh
 COPY --from=builder /app/prisma ./prisma
 WORKDIR /app/backend
 EXPOSE 4000
-CMD ["sh", "-c", "npm run prisma:migrate && npm run seed && npm run start"]
+CMD ["sh", "./entrypoint.sh"]

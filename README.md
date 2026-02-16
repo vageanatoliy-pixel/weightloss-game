@@ -1,4 +1,4 @@
-# WeightLoss Game v1.0 (MVP+)
+# WeightLoss Game v1.1.0
 
 ## Stack
 - Frontend: React + TypeScript + Vite (mobile-first, PWA manifest + service worker)
@@ -35,6 +35,25 @@ Demo users:
 ```bash
 docker compose up --build
 ```
+
+## Deploy (Render)
+This repo includes a Render Blueprint at `render.yaml`.
+
+1. Push latest code to GitHub.
+2. Open [Render Dashboard](https://dashboard.render.com/).
+3. Click `New` -> `Blueprint`.
+4. Connect repo `vageanatoliy-pixel/weightloss-game`.
+5. Render will create:
+   - `weightloss-game-api` (backend, Docker, with persistent disk at `/data`)
+   - `weightloss-game-web` (frontend static site)
+6. After first deploy, update service env URLs if Render assigned different hostnames:
+   - Backend `FRONTEND_URL` = frontend public URL
+   - Frontend `VITE_API_URL` = backend public URL
+7. Redeploy both services once after URL update.
+
+Notes:
+- `SEED_ON_START=false` in production by default.
+- To preload demo data once in production, temporarily set `SEED_ON_START=true`, redeploy backend, then switch back to `false`.
 
 ## Tests
 ```bash
@@ -102,4 +121,4 @@ curl -s http://localhost:4000/games/demo-game-1/if/today \
 - Mobile leaderboard cards (with desktop table fallback).
 - IF local notification reminder (1 hour before fast end, after notification permission is granted).
 - Playwright smoke tests for auth/home, leaderboard privacy, IF start/finish flow.
-- CI workflow for unit + e2e on push/PR: `/Users/imag/Documents/Codex/weightloss-game/.github/workflows/ci.yml`
+- CI workflow for unit + e2e on push/PR: `.github/workflows/ci.yml`
