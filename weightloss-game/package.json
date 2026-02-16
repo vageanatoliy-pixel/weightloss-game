@@ -1,0 +1,23 @@
+{
+  "name": "weightloss-game",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w backend & npm run dev -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "test": "npm run test -w backend",
+    "e2e:prepare": "npm run prisma:generate -w backend && npm run prisma:migrate -w backend && npm run seed -w backend",
+    "test:e2e": "npm run e2e:prepare && playwright test",
+    "test:all": "npm run test && npm run test:e2e",
+    "prisma:generate": "npm run prisma:generate -w backend",
+    "prisma:migrate": "npm run prisma:migrate -w backend",
+    "seed": "npm run seed -w backend"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

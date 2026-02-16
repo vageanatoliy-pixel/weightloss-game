@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - JWT_SECRET=super-secret-change-me
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - FRONTEND_URL=http://localhost:5173
+    volumes:
+      - sqlite_data:/app/prisma
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:4000
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  sqlite_data:

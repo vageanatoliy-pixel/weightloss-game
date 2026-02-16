@@ -1,0 +1,9 @@
+{
+  "name": "WeightLoss Game",
+  "short_name": "WLG",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4faf8",
+  "theme_color": "#0f766e",
+  "icons": []
+}

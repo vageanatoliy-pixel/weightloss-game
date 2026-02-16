@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String               @id @default(cuid())
+  nickname             String
+  avatarUrl            String?
+  email                String               @unique
+  passwordHash         String
+  role                 String               @default("USER")
+  privacyCaloriesMode  String               @default("PRIVATE")
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  settings             UserSettings?
+  memberships          GameMember[]
+  weighIns             WeighIn[]
+  roundResults         RoundResult[]
+  ifSessions           IFSession[]
+  ifDayStats           IFDayStat[]
+  calorieDays          CalorieDay[]
+  calorieEntries       CalorieEntry[]
+  createdGames         Game[]               @relation("GameCreator")
+  weighInEditLogs      WeighInEditLog[]
+}
+
+model UserSettings {
+  id                String   @id @default(cuid())
+  userId             String   @unique
+  sex                String?
+  age                Int?
+  heightCm           Float?
+  weightKgPrivate    Float?
+  activityMultiplier Float?   @default(1.2)
+  tdeeGoalKcal       Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Game {
+  id           String      @id @default(cuid())
+  name         String
+  percentCap   Float       @default(2.5)
+  pointsScheme String
+  createdBy    String
+  createdAt    DateTime    @default(now())
+
+  creator      User        @relation("GameCreator", fields: [createdBy], references: [id])
+  members      GameMember[]
+  rounds       Round[]
+  weighIns     WeighIn[]
+  ifSessions   IFSession[]
+  ifDayStats   IFDayStat[]
+}
+
+model GameMember {
+  userId    String
+  gameId    String
+  joinedAt  DateTime @default(now())
+  isActive  Boolean  @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([userId, gameId])
+}
+
+model Round {
+  id        String      @id @default(cuid())
+  gameId    String
+  title     String
+  startAt   DateTime
+  endAt     DateTime
+  status    String      @default("UPCOMING")
+  createdAt DateTime    @default(now())
+
+  game      Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  weighIns  WeighIn[]
+  results   RoundResult[]
+}
+
+model WeighIn {
+  id          String   @id @default(cuid())
+  userId      String
+  gameId      String
+  roundId     String
+  weightKg    Float
+  takenAt     DateTime @default(now())
+  morning     Boolean
+  afterToilet Boolean
+  noClothes   Boolean
+  locked      Boolean  @default(false)
+  editedCount Int      @default(0)
+  suspicious  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game   Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  round  Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roundId])
+  @@index([gameId, roundId])
+}
+
+model WeighInEditLog {
+  id         String   @id @default(cuid())
+  weighInId   String
+  userId      String
+  editedAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RoundResult {
+  id             String   @id @default(cuid())
+  roundId        String
+  userId         String
+  startWeightKg  Float
+  endWeightKg    Float
+  percentReal    Float
+  percentCapped  Float
+  pointsAwarded  Int
+  rank           Int
+  suspicious     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roundId, userId])
+  @@index([userId])
+}
+
+model IFSession {
+  id              String   @id @default(cuid())
+  userId          String
+  gameId          String
+  startedAt       DateTime
+  endedAt         DateTime?
+  targetHours     Float
+  status          String   @default("FASTING")
+  durationMinutes Int      @default(0)
+  streakDay       Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([userId, gameId])
+}
+
+model IFDayStat {
+  id             String   @id @default(cuid())
+  userId         String
+  gameId         String
+  date           String
+  fastingMinutes Int
+  targetMinutes  Int
+  streak         Int      @default(0)
+  isComplete     Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameId, date])
+}
+
+model CalorieDay {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String
+  goalKcal  Int
+  totalKcal Int      @default(0)
+  isTracked Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+}
+
+model CalorieEntry {
+  id      String  @id @default(cuid())
+  userId  String
+  date    String
+  name    String
+  kcal    Int
+  protein Float?
+  fat     Float?
+  carbs   Float?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
