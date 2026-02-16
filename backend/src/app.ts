@@ -17,7 +17,8 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
-      if (isLocalhost || config.allowedOrigins.includes(origin)) {
+      const isRenderOrigin = /^https:\/\/[a-z0-9-]+\.onrender\.com$/.test(origin);
+      if (isLocalhost || isRenderOrigin || config.allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));
