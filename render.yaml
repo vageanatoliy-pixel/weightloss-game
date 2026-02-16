@@ -13,15 +13,11 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
-        value: file:/data/dev.db
+        value: file:/tmp/dev.db
       - key: FRONTEND_URL
         value: https://weightloss-game-web.onrender.com
       - key: SEED_ON_START
-        value: false
-    disk:
-      name: weightloss-sqlite
-      mountPath: /data
-      sizeGB: 1
+        value: true
 
   - type: web
     name: weightloss-game-web
