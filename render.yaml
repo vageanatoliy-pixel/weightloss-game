@@ -23,11 +23,11 @@ services:
       mountPath: /data
       sizeGB: 1
 
-  - type: static
-    name: weightloss-game-web
+staticSites:
+  - name: weightloss-game-web
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    publishPath: dist
     pullRequestPreviewsEnabled: false
     envVars:
       - key: VITE_API_URL
