@@ -2,6 +2,7 @@ services:
   - type: web
     name: weightloss-game-api
     env: docker
+    rootDir: .
     dockerfilePath: ./backend/Dockerfile
     plan: free
     autoDeploy: true
@@ -22,9 +23,9 @@ services:
   - type: web
     name: weightloss-game-web
     env: static
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    rootDir: .
+    buildCommand: npm install && npm run build -w frontend
+    staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: false
     envVars:
       - key: VITE_API_URL
