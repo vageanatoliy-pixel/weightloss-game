@@ -269,11 +269,14 @@ app.post('/games', adminOnly, async (req: AuthRequest, res) => {
 });
 
 app.patch('/games/:id/settings', adminOnly, async (req, res) => {
+  const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
+
   const parsed = gameSettingsSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error.flatten());
 
   const updated = await prisma.game.update({
-    where: { id: req.params.id },
+    where: { id: gameId },
     data: {
       ...(parsed.data.percentCap !== undefined ? { percentCap: parsed.data.percentCap } : {}),
       ...(parsed.data.pointsScheme !== undefined ? { pointsScheme: JSON.stringify(parsed.data.pointsScheme) } : {}),
@@ -285,6 +288,7 @@ app.patch('/games/:id/settings', adminOnly, async (req, res) => {
 
 app.post('/games/:id/join', async (req: AuthRequest, res) => {
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
 
   await prisma.gameMember.upsert({
     where: { userId_gameId: { userId: authed(req), gameId } },
@@ -296,12 +300,15 @@ app.post('/games/:id/join', async (req: AuthRequest, res) => {
 });
 
 app.post('/games/:id/rounds', adminOnly, async (req, res) => {
+  const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
+
   const parsed = roundSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error.flatten());
 
   const round = await prisma.round.create({
     data: {
-      gameId: req.params.id,
+      gameId,
       title: parsed.data.title,
       startAt: new Date(parsed.data.startAt),
       endAt: new Date(parsed.data.endAt),
@@ -314,6 +321,8 @@ app.post('/games/:id/rounds', adminOnly, async (req, res) => {
 
 app.patch('/rounds/:id/close', adminOnly, async (req, res) => {
   const roundId = req.params.id;
+  if (!roundId) return res.status(400).json({ error: 'Missing round id' });
+
   await prisma.round.update({ where: { id: roundId }, data: { status: 'CLOSED' } });
   await recalcRoundResults(roundId);
   return res.json({ ok: true });
@@ -324,6 +333,7 @@ app.post('/games/:id/weighins', async (req: AuthRequest, res) => {
   if (!parsed.success) return res.status(400).json(parsed.error.flatten());
 
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
   const userId = authed(req);
 
   const member = await prisma.gameMember.findUnique({ where: { userId_gameId: { userId, gameId } } });
@@ -395,6 +405,7 @@ app.post('/games/:id/weighins', async (req: AuthRequest, res) => {
 
 app.get('/rounds/:id/results', async (req: AuthRequest, res) => {
   const roundId = req.params.id;
+  if (!roundId) return res.status(400).json({ error: 'Missing round id' });
   const me = authed(req);
 
   const round = await prisma.round.findUnique({
@@ -444,6 +455,7 @@ app.get('/rounds/:id/results', async (req: AuthRequest, res) => {
 
 app.get('/games/:id/leaderboard', async (req: AuthRequest, res) => {
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
   const me = authed(req);
   const today = dateKey(new Date());
 
@@ -532,6 +544,7 @@ app.post('/games/:id/if/start', async (req: AuthRequest, res) => {
   if (!parsed.success) return res.status(400).json(parsed.error.flatten());
 
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
   const userId = authed(req);
 
   const active = await prisma.iFSession.findFirst({
@@ -554,6 +567,7 @@ app.post('/games/:id/if/start', async (req: AuthRequest, res) => {
 
 app.post('/games/:id/if/finish', async (req: AuthRequest, res) => {
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
   const userId = authed(req);
 
   const active = await prisma.iFSession.findFirst({
@@ -621,6 +635,7 @@ app.post('/games/:id/if/finish', async (req: AuthRequest, res) => {
 
 app.get('/games/:id/if/today', async (req: AuthRequest, res) => {
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
   const userId = authed(req);
   const today = dateKey(new Date());
 
@@ -712,6 +727,7 @@ app.post('/calories/entry', async (req: AuthRequest, res) => {
 app.get('/calories/day/:date', async (req: AuthRequest, res) => {
   const userId = authed(req);
   const date = req.params.date;
+  if (!date) return res.status(400).json({ error: 'Missing date' });
 
   const day = await prisma.calorieDay.findUnique({ where: { userId_date: { userId, date } } });
   const entries = await prisma.calorieEntry.findMany({
@@ -725,6 +741,7 @@ app.get('/calories/day/:date', async (req: AuthRequest, res) => {
 app.get('/games/:id/rounds', async (req: AuthRequest, res) => {
   const userId = authed(req);
   const gameId = req.params.id;
+  if (!gameId) return res.status(400).json({ error: 'Missing game id' });
   const member = await prisma.gameMember.findUnique({ where: { userId_gameId: { userId, gameId } } });
   if (!member) return res.status(403).json({ error: 'Forbidden' });
 

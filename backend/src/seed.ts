@@ -13,6 +13,7 @@ const defaultScheme = {
 
 async function main() {
   const password = await bcrypt.hash('password123', 10);
+  const capitalize = (value: string): string => `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 
   const admin = await prisma.user.upsert({
     where: { email: 'admin@demo.com' },
@@ -32,7 +33,7 @@ async function main() {
         update: {},
         create: {
           email: `${name}@demo.com`,
-          nickname: name[0].toUpperCase() + name.slice(1),
+          nickname: capitalize(name),
           passwordHash: password,
           role: 'USER',
           privacyCaloriesMode: i % 2 === 0 ? 'PUBLIC_CHECKMARK' : 'PRIVATE',
@@ -103,14 +104,21 @@ async function main() {
   const weights2 = [96.5, 88.2, 81.8, 98.4, 73.5, 86.1];
 
   for (let i = 0; i < allUsers.length; i += 1) {
+    const user = allUsers[i];
+    const weight1 = weights1[i];
+    const weight2 = weights2[i];
+    if (!user || weight1 === undefined || weight2 === undefined) {
+      throw new Error(`Seed data mismatch at index ${i}`);
+    }
+
     await prisma.weighIn.upsert({
-      where: { userId_roundId: { userId: allUsers[i].id, roundId: round1.id } },
+      where: { userId_roundId: { userId: user.id, roundId: round1.id } },
       update: {},
       create: {
-        userId: allUsers[i].id,
+        userId: user.id,
         gameId: game.id,
         roundId: round1.id,
-        weightKg: weights1[i],
+        weightKg: weight1,
         morning: true,
         afterToilet: true,
         noClothes: true,
@@ -119,13 +127,13 @@ async function main() {
     });
 
     await prisma.weighIn.upsert({
-      where: { userId_roundId: { userId: allUsers[i].id, roundId: round2.id } },
+      where: { userId_roundId: { userId: user.id, roundId: round2.id } },
       update: {},
       create: {
-        userId: allUsers[i].id,
+        userId: user.id,
         gameId: game.id,
         roundId: round2.id,
-        weightKg: weights2[i],
+        weightKg: weight2,
         morning: i % 2 === 0,
         afterToilet: true,
         noClothes: i % 3 !== 0,
